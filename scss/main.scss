@@ -97,3 +97,65 @@ body{
         color: white;
         margin-top: 48px;   
     }
+
+    .auth {
+        display: flex;
+        justify-content: center;
+        padding: 64px 24px;
+
+        &__card {
+            background: white;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 32px;
+            width: 400px;
+
+            h2{
+                text-align: center;
+                margin-top: 0px;
+            }
+        }
+        &__switch {
+            text-align: center;
+            font-size: 13px;
+            color: $gray;
+            a {
+                color: $green;
+            }
+        }
+    }
+
+    .field {
+        margin-bottom: 16px;
+        label{
+        display: block;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: $light;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+    }
+
+    .btn--full {
+        display: block;
+        width: 100%;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+    }
+
+    .field--row {
+        display: flex;
+        gap: 12px;
+        .field {
+            flex: 1;
+        }
+    }

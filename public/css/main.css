@@ -89,4 +89,64 @@ body {
   margin-top: 48px;
 }
 
+.auth {
+  display: flex;
+  justify-content: center;
+  padding: 64px 24px;
+}
+.auth__card {
+  background: white;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 32px;
+  width: 400px;
+}
+.auth__card h2 {
+  text-align: center;
+  margin-top: 0px;
+}
+.auth__switch {
+  text-align: center;
+  font-size: 13px;
+  color: #777777;
+}
+.auth__switch a {
+  color: #2D6A4F;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #F1F3F5;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.btn--full {
+  display: block;
+  width: 100%;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+}
+
+.field--row {
+  display: flex;
+  gap: 12px;
+}
+.field--row .field {
+  flex: 1;
+}
+
 /*# sourceMappingURL=main.css.map */
