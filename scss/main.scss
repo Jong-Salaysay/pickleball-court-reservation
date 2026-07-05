@@ -1,0 +1,99 @@
+//brand colors
+$green: #2D6A4F;
+$green-light: #E8F5E9;
+$orange: #F4A261;
+$dark: #333333;
+$gray: #777777;
+$light: #F1F3F5;
+
+body{
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: $dark;
+}
+
+.navbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: $green;
+    padding: 12px 32px;
+
+    &__brand {
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    &__links a {
+        color: white;
+        text-decoration: none;
+        margin-left: 24px;
+        font-size: 14px;
+
+        &.btn--light {
+        color: $green;
+        }
+    }
+}
+    .hero {
+        text-align: center;
+        padding: 96px 24px;
+        h1 {
+            font-size: 40px;
+            margin-bottom: 18px;
+        }
+        p {
+            margin-bottom: 24px;
+            color: $gray;
+        }
+    }
+    .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+
+
+    &--primary {
+        background: $green;
+        color: white;
+    }
+    &--outline {
+        color: $green;
+        border: 1px solid $green;
+    }
+    &--light {
+        background: white;
+        color: $green;
+        padding: 6px 14px;
+    }
+}
+    .cards {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        padding: 48px 24px;
+        .card {
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 24px;
+            width: 280px;
+            text-align: center;
+            h3 {
+                margin-top: 0px;
+            }
+            p {
+                color: $gray;
+            }
+        }
+    }
+    .footer {
+        background: $green;
+        text-align: center;
+        padding: 16px;
+        color: white;
+        margin-top: 48px;   
+    }
