@@ -3,14 +3,16 @@ const db = require("./db/db");
 const app = express();
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
-
+app.use(express.json());
 app.use(express.static ("public"));
 app.use(express.urlencoded({ extended: true }));
+
 app.use(session({
     secret: "pickleball_secret",
     resave: false,
     saveUninitialized: true,
 }));
+
 
 app.get("/api/test", async (req, res) => {
     const [rows] = await db.query("SELECT 1 + 1 AS result");
@@ -119,7 +121,39 @@ app.get("/api/availability", async (req, res) => {
     res.json({date, slots});
 })
 
+app.post("/api/bookings", async (req, res) => {
+    if (!req.session.user){
+        return res.status(401).json({ error: "You must be logged in to book."})
+    }
 
+    const {booking_date, start_hour, duration, payment_method} = req.body;
+        if (!booking_date || !start_hour || !duration || !payment_method){
+            return res.status(400).json({error: "Missing booking details."});
+        }
+    const start = parseInt(start_hour);
+    const end = start + parseInt(duration);
+    const okMorning = start >=6 && end <=9;
+    const okEvening = start>=17 && end <=22;
+        if (!okMorning && !okEvening){
+            return res.status(400).json({error: "Booking must stay within operating hours."});
+        }
+    const [existing] = await db.query(
+        "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'",
+        [booking_date]
+    );
+        for (let h = start; h < end; h++){
+            const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2))
+        );
+        if (taken) return res.status(409).json({error: "Sorry, that slot is taken."});
+        }
+    const start_time = `${String(start).padStart(2, "0")}:00:00`;
+    const end_time = `${String(end).padStart(2, "0")}:00:00`;
+    await db.query(
+        "INSERT INTO bookings (user_id, booking_date, start_time, end_time, payment_method) VALUES (?, ?, ?, ?, ?)",
+        [req.session.user.id, booking_date, start_time, end_time, payment_method]
+    );
+    res.json({success: true });
+});
 
 
 app.listen(3000, () =>{

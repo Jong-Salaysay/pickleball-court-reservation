@@ -33,6 +33,30 @@
         </div>
 
         <div id="slots" class="slots"> </div>
+                <div id="booking-modal" class="modal hidden">
+            <div class="modal__card">
+                <h2>Book the Court</h2>
+                <p id="modal-slot"></p>
+                <div class="field">
+                    <label for="duration">Duration</label>
+                    <select id="duration">
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="payment">Payment method</label>
+                    <select id="payment">
+                        <option value="ewallet">E-wallet (GCash)</option>
+                        <option value="cash">Cash on site</option>
+                    </select>
+                </div>
+                <p id="modal-summary" class="summary"></p>
+                <button id="confirm-booking" class="btn btn--primary btn--full">Confirm Booking</button>
+                <button id="cancel-booking" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
 
         </main>
         <script src="/js/nav.js"></script>

@@ -230,4 +230,43 @@ body {
   color: white;
 }
 
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal.hidden {
+  display: none;
+}
+.modal__card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 400px;
+}
+
+.summary {
+  background: #E8F5E9;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.btn-cancel {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: #777777;
+  cursor: pointer;
+}
+
 /*# sourceMappingURL=main.css.map */
