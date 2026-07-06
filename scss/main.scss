@@ -313,3 +313,122 @@ body{
         font-size: 14px;
     }
 }
+
+.admin-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 24px;
+}
+.admin-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.admin-tab {
+    padding: 10px 18px;
+    border: 1px solid $green;
+    background: white;
+    color: $green;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    &--active {
+        background: $green;
+        color: white;
+    }
+}
+.admin-section.hidden {
+    display: none;
+}
+.admin-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: center;
+    input, select {
+        padding: 10px;
+        border: 1px solid #E0E0E0;
+        border-radius: 8px;
+    }
+}
+.admin-form {
+    border: 1px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    h3 {
+        width: 100%;
+        margin: 0 0 8px 0;
+    }
+    input, select {
+        padding: 10px;
+        border: 1px solid #E0E0E0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+}
+.admin-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+    .muted {
+        color: $gray;
+        font-size: 13px;
+    }
+    &__actions {
+        display: flex;
+        gap: 8px;
+    }
+}
+.btn--small {
+    padding: 8px 14px;
+    font-size: 13px;
+}
+.report-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.stat-card {
+    border: 1px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 20px;
+    width: 150px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    &__number {
+        font-size: 26px;
+        font-weight: bold;
+        color: $green;
+    }
+    &__label {
+        font-size: 12px;
+        color: $gray;
+        margin-top: 4px;
+    }
+}
+
+.booking-actions {
+    display: flex;
+    gap: 8px;
+}
+.btn-reschedule-booking {
+    border: 1px solid $green;
+    color: $green;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}

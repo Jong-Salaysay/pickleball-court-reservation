@@ -30,11 +30,19 @@ async function loadBookings() {
 
     if (b.status !== "cancelled" && b.status !== "completed") {
       if (b.minutes_until > 360) {
+        const actions = document.createElement("div");
+        actions.className = "booking-actions";
+        const reschedBtn = document.createElement("button");
+        reschedBtn.textContent = "Reschedule";
+        reschedBtn.className = "btn-reschedule-booking";
+        reschedBtn.addEventListener("click", () => rescheduleBooking(b.id));
         const btn = document.createElement("button");
         btn.textContent = "Cancel";
         btn.className = "btn-cancel-booking";
         btn.addEventListener("click", () => cancelBooking(b.id));
-        card.appendChild(btn);
+        actions.appendChild(reschedBtn);
+        actions.appendChild(btn);
+        card.appendChild(actions);
       } else {
         const note = document.createElement("span");
         note.className = "muted";
@@ -44,6 +52,21 @@ async function loadBookings() {
     }
     box.appendChild(card);
   });
+}
+
+async function rescheduleBooking(id) {
+  const date = prompt("New date (YYYY-MM-DD):");
+  if (!date) return;
+  const start_hour = prompt("New start hour in 24-hour time (6, 7, 8 for morning or 17 to 21 for evening):");
+  if (!start_hour) return;
+  const res = await fetch(`/api/bookings/${id}/reschedule`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date, start_hour })
+  });
+  const result = await res.json();
+  if (!res.ok) { alert(result.error || "Could not reschedule."); return; }
+  loadBookings();
 }
 
 async function cancelBooking(id) {

@@ -7,7 +7,7 @@ const session = require("express-session");
 const Anthropic = require("@anthropic-ai/sdk");
 const anthropic = new Anthropic();
 app.use(express.json());
-app.use(express.static ("public"));
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
@@ -27,7 +27,7 @@ app.post("/api/auth/register", async (req, res) => {
     const { first_name, last_name, email, contact_number, password, confirm_password } = req.body;
 
     if (!first_name || !last_name || !email || !contact_number || !password) {
-    return res.status(400).send({ error: "All required fields are required" });
+        return res.status(400).send({ error: "All required fields are required" });
     }
     if (password !== confirm_password) {
         return res.status(400).send({ error: "Passwords do not match" });
@@ -35,7 +35,7 @@ app.post("/api/auth/register", async (req, res) => {
 
     try {
         const password_hash = await bcrypt.hash(password, 10);
-        
+
         await db.query(
             "INSERT INTO users (email, password_hash, first_name, last_name, contact_number) VALUES (?, ?, ?, ?, ?)",
             [email, password_hash, first_name, last_name, contact_number]
@@ -61,7 +61,7 @@ app.post("/api/auth/login", async (req, res) => {
     const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
     const user = rows[0];
 
-    if(!user || !user.is_active){
+    if (!user || !user.is_active) {
         return res.redirect("/login.html?error=1");
     }
 
@@ -107,8 +107,8 @@ app.get("/api/availability", async (req, res) => {
 
     function covered(list, hour) {
         return list.some(item => {
-            const start = parseInt(item.start_time.slice (0,2));
-            const end = parseInt(item.end_time.slice (0,2));
+            const start = parseInt(item.start_time.slice(0, 2));
+            const end = parseInt(item.end_time.slice(0, 2));
             return hour >= start && hour < end;
         });
     }
@@ -116,80 +116,80 @@ app.get("/api/availability", async (req, res) => {
     const slots = hours.map(hour => {
         let status = "available";
         if (covered(blocked, hour)) status = "blocked";
-            else if (covered(bookings, hour)) status = "reserved";
-            else if (covered(openPlay, hour)) status = "open_play";
+        else if (covered(bookings, hour)) status = "reserved";
+        else if (covered(openPlay, hour)) status = "open_play";
         return { hour, status };
     });
 
-    res.json({date, slots});
+    res.json({ date, slots });
 })
 
 app.post("/api/bookings", async (req, res) => {
-    if (!req.session.user){
-        return res.status(401).json({ error: "You must be logged in to book."})
+    if (!req.session.user) {
+        return res.status(401).json({ error: "You must be logged in to book." })
     }
 
-    const {booking_date, start_hour, duration, payment_method} = req.body;
-        if (!booking_date || !start_hour || !duration || !payment_method){
-            return res.status(400).json({error: "Missing booking details."});
-        }
+    const { booking_date, start_hour, duration, payment_method } = req.body;
+    if (!booking_date || !start_hour || !duration || !payment_method) {
+        return res.status(400).json({ error: "Missing booking details." });
+    }
     const start = parseInt(start_hour);
     const end = start + parseInt(duration);
-    const okMorning = start >=6 && end <=9;
-    const okEvening = start>=17 && end <=22;
-        if (!okMorning && !okEvening){
-            return res.status(400).json({error: "Booking must stay within operating hours."});
-        }
+    const okMorning = start >= 6 && end <= 9;
+    const okEvening = start >= 17 && end <= 22;
+    if (!okMorning && !okEvening) {
+        return res.status(400).json({ error: "Booking must stay within operating hours." });
+    }
     const [existing] = await db.query(
         "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'",
         [booking_date]
     );
-        for (let h = start; h < end; h++){
-            const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2))
+    for (let h = start; h < end; h++) {
+        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2))
         );
-        if (taken) return res.status(409).json({error: "Sorry, that slot is taken."});
-        }
+        if (taken) return res.status(409).json({ error: "Sorry, that slot is taken." });
+    }
     const start_time = `${String(start).padStart(2, "0")}:00:00`;
     const end_time = `${String(end).padStart(2, "0")}:00:00`;
     await db.query(
         "INSERT INTO bookings (user_id, booking_date, start_time, end_time, payment_method) VALUES (?, ?, ?, ?, ?)",
         [req.session.user.id, booking_date, start_time, end_time, payment_method]
     );
-    res.json({success: true });
+    res.json({ success: true });
 });
 
 app.get("/api/bookings/mine", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
-  const [rows] = await db.query(
-    `SELECT id,
+    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+    const [rows] = await db.query(
+        `SELECT id,
             DATE_FORMAT(booking_date, '%Y-%m-%d') AS booking_date,
             start_time, end_time, payment_method, payment_status, status,
             TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(booking_date, start_time)) AS minutes_until
      FROM bookings
      WHERE user_id = ?
      ORDER BY booking_date DESC, start_time DESC`,
-    [req.session.user.id]
-  );
-  res.json(rows);
+        [req.session.user.id]
+    );
+    res.json(rows);
 });
 
 app.post("/api/bookings/:id/cancel", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
 
-  const [rows] = await db.query(
-    `SELECT TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(booking_date, start_time)) AS minutes_until, status
+    const [rows] = await db.query(
+        `SELECT TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(booking_date, start_time)) AS minutes_until, status
      FROM bookings WHERE id = ? AND user_id = ?`,
-    [req.params.id, req.session.user.id]
-  );
-  const booking = rows[0];
-  if (!booking) return res.status(404).json({ error: "Booking not found" });
-  if (booking.status === "cancelled") return res.status(400).json({ error: "Already cancelled" });
-  if (booking.minutes_until <= 360) {
-    return res.status(403).json({ error: "Cannot cancel within 6 hours of the booking." });
-  }
+        [req.params.id, req.session.user.id]
+    );
+    const booking = rows[0];
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.status === "cancelled") return res.status(400).json({ error: "Already cancelled" });
+    if (booking.minutes_until <= 360) {
+        return res.status(403).json({ error: "Cannot cancel within 6 hours of the booking." });
+    }
 
-  await db.query("UPDATE bookings SET status = 'cancelled' WHERE id = ?", [req.params.id]);
-  res.json({ success: true });
+    await db.query("UPDATE bookings SET status = 'cancelled' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
 });
 function chatFormatHour(h) {
     const suffix = h >= 12 ? "PM" : "AM";
@@ -327,6 +327,214 @@ app.post("/api/chat", async (req, res) => {
     }
 });
 
-app.listen(3000, () =>{
+app.post("/api/bookings/:id/reschedule", async (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+
+    const { date, start_hour } = req.body;
+    if (!date || !start_hour) return res.status(400).json({ error: "New date and start time are required" });
+
+    const [rows] = await db.query(
+        `SELECT TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(booking_date, start_time)) AS minutes_until,
+                TIMESTAMPDIFF(HOUR, start_time, end_time) AS duration, status
+         FROM bookings WHERE id = ? AND user_id = ?`,
+        [req.params.id, req.session.user.id]
+    );
+    const booking = rows[0];
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (booking.status === "cancelled") return res.status(400).json({ error: "This booking is cancelled" });
+    if (booking.minutes_until <= 360) {
+        return res.status(403).json({ error: "Cannot reschedule within 6 hours of the booking." });
+    }
+
+    const start = parseInt(start_hour);
+    const end = start + booking.duration;
+    const okMorning = start >= 6 && end <= 9;
+    const okEvening = start >= 17 && end <= 22;
+    if (!okMorning && !okEvening) return res.status(400).json({ error: "New time is outside operating hours." });
+
+    const [existing] = await db.query(
+        "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled' AND id != ?",
+        [date, req.params.id]
+    );
+    for (let h = start; h < end; h++) {
+        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2)));
+        if (taken) return res.status(409).json({ error: "That new slot is already taken." });
+    }
+
+    const start_time = `${String(start).padStart(2, "0")}:00:00`;
+    const end_time = `${String(end).padStart(2, "0")}:00:00`;
+    await db.query("UPDATE bookings SET booking_date = ?, start_time = ?, end_time = ? WHERE id = ?",
+        [date, start_time, end_time, req.params.id]);
+    res.json({ success: true });
+});
+
+function requireAdmin(req, res, next) {
+    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
+    if (req.session.user.role !== "admin") return res.status(403).json({ error: "Admins only" });
+    next();
+}
+
+app.get("/api/admin/bookings", requireAdmin, async (req, res) => {
+    const date = req.query.date;
+    let sql = `SELECT b.id, DATE_FORMAT(b.booking_date, '%Y-%m-%d') AS booking_date,
+                      b.start_time, b.end_time, b.payment_method, b.payment_status,
+                      b.ewallet_reference, b.status, b.walk_in_name,
+                      u.first_name, u.last_name
+               FROM bookings b LEFT JOIN users u ON b.user_id = u.id`;
+    const params = [];
+    if (date) { sql += " WHERE b.booking_date = ?"; params.push(date); }
+    sql += " ORDER BY b.booking_date DESC, b.start_time";
+    const [rows] = await db.query(sql, params);
+    res.json(rows);
+});
+
+app.post("/api/admin/bookings", requireAdmin, async (req, res) => {
+    const { walk_in_name, date, start_hour, duration, payment_method } = req.body;
+    if (!walk_in_name || !date || !start_hour || !duration || !payment_method) {
+        return res.status(400).json({ error: "All fields are required" });
+    }
+    const start = parseInt(start_hour);
+    const end = start + parseInt(duration);
+    const okMorning = start >= 6 && end <= 9;
+    const okEvening = start >= 17 && end <= 22;
+    if (!okMorning && !okEvening) return res.status(400).json({ error: "Outside operating hours" });
+
+    const [existing] = await db.query(
+        "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'", [date]);
+    for (let h = start; h < end; h++) {
+        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2)));
+        if (taken) return res.status(409).json({ error: "That slot is already taken" });
+    }
+
+    const start_time = `${String(start).padStart(2, "0")}:00:00`;
+    const end_time = `${String(end).padStart(2, "0")}:00:00`;
+    await db.query(
+        "INSERT INTO bookings (user_id, walk_in_name, booking_date, start_time, end_time, payment_method) VALUES (NULL, ?, ?, ?, ?, ?)",
+        [walk_in_name, date, start_time, end_time, payment_method]);
+    res.json({ success: true });
+});
+
+app.post("/api/admin/bookings/:id/pay", requireAdmin, async (req, res) => {
+    const reference = req.body.reference || null;
+    const [result] = await db.query(
+        "UPDATE bookings SET payment_status = 'paid', status = 'confirmed', ewallet_reference = ? WHERE id = ? AND status != 'cancelled'",
+        [reference, req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ error: "Booking not found or cancelled" });
+    res.json({ success: true });
+});
+
+app.post("/api/admin/bookings/:id/cancel", requireAdmin, async (req, res) => {
+    await db.query("UPDATE bookings SET status = 'cancelled' WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+});
+
+app.get("/api/admin/openplay", requireAdmin, async (req, res) => {
+    const [rows] = await db.query(
+        `SELECT id, DATE_FORMAT(session_date, '%Y-%m-%d') AS session_date,
+                start_time, end_time, attendance_count, per_head_fee, total_collected
+         FROM open_play_sessions ORDER BY session_date DESC`);
+    res.json(rows);
+});
+
+app.post("/api/admin/openplay", requireAdmin, async (req, res) => {
+    const { date, start_hour, duration } = req.body;
+    if (!date || !start_hour || !duration) return res.status(400).json({ error: "All fields are required" });
+    const start = parseInt(start_hour);
+    const end = start + parseInt(duration);
+    const start_time = `${String(start).padStart(2, "0")}:00:00`;
+    const end_time = `${String(end).padStart(2, "0")}:00:00`;
+    await db.query(
+        "INSERT INTO open_play_sessions (session_date, start_time, end_time) VALUES (?, ?, ?)",
+        [date, start_time, end_time]);
+    res.json({ success: true });
+});
+
+app.post("/api/admin/openplay/:id/log", requireAdmin, async (req, res) => {
+    const attendees = parseInt(req.body.attendees);
+    if (!attendees || attendees < 0) return res.status(400).json({ error: "Attendee count is required" });
+    await db.query(
+        "UPDATE open_play_sessions SET attendance_count = ?, total_collected = ? * per_head_fee WHERE id = ?",
+        [attendees, attendees, req.params.id]);
+    res.json({ success: true });
+});
+
+app.get("/api/admin/blocked", requireAdmin, async (req, res) => {
+    const [rows] = await db.query(
+        `SELECT id, DATE_FORMAT(blocked_date, '%Y-%m-%d') AS blocked_date, start_time, end_time, reason
+         FROM blocked_slots ORDER BY blocked_date DESC`);
+    res.json(rows);
+});
+
+app.post("/api/admin/blocked", requireAdmin, async (req, res) => {
+    const { date, start_hour, duration, reason } = req.body;
+    if (!date || !start_hour || !duration || !reason) return res.status(400).json({ error: "All fields are required" });
+    const start = parseInt(start_hour);
+    const end = start + parseInt(duration);
+    const start_time = `${String(start).padStart(2, "0")}:00:00`;
+    const end_time = `${String(end).padStart(2, "0")}:00:00`;
+    await db.query(
+        "INSERT INTO blocked_slots (blocked_date, start_time, end_time, reason) VALUES (?, ?, ?, ?)",
+        [date, start_time, end_time, reason]);
+    res.json({ success: true });
+});
+
+app.delete("/api/admin/blocked/:id", requireAdmin, async (req, res) => {
+    await db.query("DELETE FROM blocked_slots WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+});
+
+app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    const [rows] = await db.query(
+        "SELECT id, email, first_name, last_name, contact_number, is_active FROM users WHERE role = 'player' ORDER BY id");
+    res.json(rows);
+});
+
+app.post("/api/admin/users/:id/toggle", requireAdmin, async (req, res) => {
+    await db.query("UPDATE users SET is_active = NOT is_active WHERE id = ? AND role = 'player'", [req.params.id]);
+    res.json({ success: true });
+});
+
+app.get("/api/admin/reports", requireAdmin, async (req, res) => {
+    const period = req.query.period || "week";
+    const days = period === "day" ? 1 : period === "month" ? 30 : 7;
+
+    const [[bookingStats]] = await db.query(
+        `SELECT COUNT(*) AS total,
+                SUM(status = 'cancelled') AS cancelled,
+                SUM(CASE WHEN payment_status = 'paid' THEN TIMESTAMPDIFF(HOUR, start_time, end_time) * 150 ELSE 0 END) AS revenue
+         FROM bookings WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)`, [days]);
+
+    const [byMethod] = await db.query(
+        `SELECT payment_method, COUNT(*) AS count
+         FROM bookings WHERE booking_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY) AND status != 'cancelled'
+         GROUP BY payment_method`, [days]);
+
+    const [[openPlayStats]] = await db.query(
+        `SELECT COALESCE(SUM(attendance_count), 0) AS attendees, COALESCE(SUM(total_collected), 0) AS income
+         FROM open_play_sessions WHERE session_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)`, [days]);
+
+    res.json({
+        period,
+        bookings: bookingStats.total,
+        cancelled: bookingStats.cancelled || 0,
+        booking_revenue: bookingStats.revenue || 0,
+        by_method: byMethod,
+        open_play_attendees: openPlayStats.attendees,
+        open_play_income: openPlayStats.income
+    });
+});
+
+setInterval(async () => {
+    try {
+        await db.query(
+            `UPDATE bookings SET status = 'cancelled'
+             WHERE payment_method = 'ewallet' AND payment_status = 'unpaid' AND status = 'pending'
+             AND TIMESTAMPDIFF(MINUTE, NOW(), TIMESTAMP(booking_date, start_time)) <= 180`);
+    } catch (error) {
+        console.error("Auto-cancel check failed:", error.message);
+    }
+}, 60000);
+
+app.listen(3000, () => {
     console.log("Server is running at http://localhost:3000");
 });

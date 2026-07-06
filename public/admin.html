@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Panel</title>
+        <link rel="stylesheet" href="/css/main.css"/>
+    </head>
+    <body>
+        <header class="navbar">
+            <div class="navbar__brand"> Pickleball Court</div>
+            <nav class="navbar__links">
+                <a href="/admin.html">Admin Panel</a>
+                <a href="/api/auth/logout" class="btn btn--light">Log Out</a>
+            </nav>
+        </header>
+        <main class="admin-page">
+            <h1>Admin Panel</h1>
+            <div class="admin-tabs">
+                <button class="admin-tab admin-tab--active" data-section="bookings">Bookings</button>
+                <button class="admin-tab" data-section="openplay">Open Play</button>
+                <button class="admin-tab" data-section="schedule">Schedule</button>
+                <button class="admin-tab" data-section="users">Users</button>
+                <button class="admin-tab" data-section="reports">Reports</button>
+            </div>
+
+            <section id="section-bookings" class="admin-section">
+                <div class="admin-toolbar">
+                    <input type="date" id="bookings-date">
+                    <button id="bookings-filter" class="btn btn--primary">Filter</button>
+                    <button id="bookings-all" class="btn btn--outline">Show All</button>
+                </div>
+                <form id="walkin-form" class="admin-form">
+                    <h3>Add Walk-in Booking</h3>
+                    <input type="text" id="walkin-name" placeholder="Customer name" required>
+                    <input type="date" id="walkin-date" required>
+                    <select id="walkin-hour" required>
+                        <option value="">Start time</option>
+                        <option value="6">6:00 AM</option>
+                        <option value="7">7:00 AM</option>
+                        <option value="8">8:00 AM</option>
+                        <option value="17">5:00 PM</option>
+                        <option value="18">6:00 PM</option>
+                        <option value="19">7:00 PM</option>
+                        <option value="20">8:00 PM</option>
+                        <option value="21">9:00 PM</option>
+                    </select>
+                    <select id="walkin-duration" required>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                    </select>
+                    <select id="walkin-payment" required>
+                        <option value="cash">Cash</option>
+                        <option value="ewallet">E-wallet</option>
+                    </select>
+                    <button type="submit" class="btn btn--primary">Add Booking</button>
+                </form>
+                <div id="bookings-list"></div>
+            </section>
+
+            <section id="section-openplay" class="admin-section hidden">
+                <form id="openplay-form" class="admin-form">
+                    <h3>Create Open Play Session</h3>
+                    <input type="date" id="openplay-date" required>
+                    <select id="openplay-hour" required>
+                        <option value="">Start time</option>
+                        <option value="6">6:00 AM</option>
+                        <option value="7">7:00 AM</option>
+                        <option value="8">8:00 AM</option>
+                        <option value="17">5:00 PM</option>
+                        <option value="18">6:00 PM</option>
+                        <option value="19">7:00 PM</option>
+                        <option value="20">8:00 PM</option>
+                        <option value="21">9:00 PM</option>
+                    </select>
+                    <select id="openplay-duration" required>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                        <option value="5">5 hours</option>
+                    </select>
+                    <button type="submit" class="btn btn--primary">Create Session</button>
+                </form>
+                <div id="openplay-list"></div>
+            </section>
+
+            <section id="section-schedule" class="admin-section hidden">
+                <form id="blocked-form" class="admin-form">
+                    <h3>Block Time Slots</h3>
+                    <input type="date" id="blocked-date" required>
+                    <select id="blocked-hour" required>
+                        <option value="">Start time</option>
+                        <option value="6">6:00 AM</option>
+                        <option value="7">7:00 AM</option>
+                        <option value="8">8:00 AM</option>
+                        <option value="17">5:00 PM</option>
+                        <option value="18">6:00 PM</option>
+                        <option value="19">7:00 PM</option>
+                        <option value="20">8:00 PM</option>
+                        <option value="21">9:00 PM</option>
+                    </select>
+                    <select id="blocked-duration" required>
+                        <option value="1">1 hour</option>
+                        <option value="2">2 hours</option>
+                        <option value="3">3 hours</option>
+                        <option value="4">4 hours</option>
+                        <option value="5">5 hours</option>
+                    </select>
+                    <input type="text" id="blocked-reason" placeholder="Reason (e.g. maintenance)" required>
+                    <button type="submit" class="btn btn--primary">Block</button>
+                </form>
+                <div id="blocked-list"></div>
+            </section>
+
+            <section id="section-users" class="admin-section hidden">
+                <div id="users-list"></div>
+            </section>
+
+            <section id="section-reports" class="admin-section hidden">
+                <div class="admin-toolbar">
+                    <select id="report-period">
+                        <option value="day">Today</option>
+                        <option value="week" selected>Last 7 days</option>
+                        <option value="month">Last 30 days</option>
+                    </select>
+                    <button id="report-load" class="btn btn--primary">Load Report</button>
+                </div>
+                <div id="report-stats" class="report-stats"></div>
+            </section>
+        </main>
+        <script src="/js/admin.js"></script>
+    </body>
+</html>
