@@ -156,4 +156,78 @@ body {
   min-height: 16px;
 }
 
+.calendar-page {
+  padding: 32px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.calendar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  margin: 16px 0;
+  font-size: 13px;
+  color: #777777;
+}
+.legend__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.chip--available {
+  border: 1px solid #2D6A4F;
+}
+.chip--reserved {
+  background: #e0e0e0;
+}
+.chip--open_play {
+  background: #F4A261;
+}
+.chip--blocked {
+  background: #555;
+}
+
+.slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.slot {
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+.slot--available {
+  border: 1px solid #2D6A4F;
+  color: #2D6A4F;
+  cursor: pointer;
+}
+.slot--reserved {
+  background: #e0e0e0;
+  color: gray;
+}
+.slot--open_play {
+  background: #F4A261;
+  color: white;
+}
+.slot--blocked {
+  background: #555;
+  color: white;
+}
+
 /*# sourceMappingURL=main.css.map */

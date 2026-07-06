@@ -165,3 +165,75 @@ body{
         text-align: center;
         min-height: 16px;
     }
+
+    .calendar-page {
+        padding: 32px;
+        max-width: 720px;
+        margin: 0 auto;}
+    .calendar-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .legend {
+        display: flex;
+        gap: 20px;
+        margin: 16px 0;
+        font-size: 13px;
+        color: $gray;
+        &__item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    }
+
+    .chip {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        display: inline-block;
+
+        &--available {
+            border: 1px solid $green;
+        }
+        &--reserved {
+            background: #e0e0e0;
+        }
+        &--open_play{
+            background: $orange;
+        }
+        &--blocked{
+            background: #555;
+        }
+    }
+
+    .slots {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); gap: 12px;
+    }
+    .slot {
+        padding: 16px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+
+        &--available {
+            border: 1px solid $green; 
+            color: $green; 
+            cursor: pointer;
+        }
+        &--reserved {
+            background: #e0e0e0; 
+            color: gray;
+        }
+        &--open_play{
+            background: $orange; 
+            color: white;
+        }
+        &--blocked{
+            background: #555;
+            color: white;
+        }
+    }
