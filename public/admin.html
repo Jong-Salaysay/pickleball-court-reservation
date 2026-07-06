@@ -27,6 +27,13 @@
             <section id="section-bookings" class="admin-section">
                 <div class="admin-toolbar">
                     <input type="date" id="bookings-date">
+                    <select id="bookings-status">
+                        <option value="">Any status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="completed">Completed</option>
+                    </select>
                     <button id="bookings-filter" class="btn btn--primary">Filter</button>
                     <button id="bookings-all" class="btn btn--outline">Show All</button>
                 </div>

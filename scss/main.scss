@@ -211,13 +211,25 @@ body{
 
     .slots {
         display: grid;
-        grid-template-columns: repeat(2, 1fr); gap: 12px;
+        grid-template-columns: repeat(7, 1fr); gap: 10px;
+    }
+    .day-col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .day-col__head {
+        text-align: center;
+        font-weight: bold;
+        font-size: 14px;
+        padding: 4px 0;
     }
     .slot {
-        padding: 16px;
+        padding: 12px 4px;
         border-radius: 8px;
         text-align: center;
         font-weight: bold;
+        font-size: 13px;
 
         &--available {
             border: 1px solid $green; 

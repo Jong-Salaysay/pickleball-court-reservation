@@ -1,4 +1,3 @@
-const dateInput = document.getElementById("date");
 const slotsBox = document.getElementById("slots");
 const modal = document.getElementById("booking-modal");
 const modalSlot = document.getElementById("modal-slot");
@@ -7,25 +6,49 @@ const durationSelect = document.getElementById("duration");
 const paymentSelect = document.getElementById("payment");
 
 let selectedHour = null;
+let selectedDate = null;
 const RATE = 150;
 
-dateInput.value = new Date().toISOString().slice(0, 10);
+function dateString(d) {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
 
 async function loadSlots() {
-  const date = dateInput.value;
-  const response = await fetch(`/api/availability?date=${date}`);
-  const data = await response.json();
-
   slotsBox.innerHTML = "";
-  data.slots.forEach(slot => {
-    const label = formatHour(slot.hour);
-    const chip = document.createElement("div");
-    chip.className = `slot slot--${slot.status}`;
-    chip.textContent = slot.status === "available" ? label : `${label} (${slot.status})`;
-    if (slot.status === "available") {
-      chip.addEventListener("click", () => openModal(slot.hour));
-    }
-    slotsBox.appendChild(chip);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+
+  const results = await Promise.all(
+    days.map(d => fetch(`/api/availability?date=${dateString(d)}`).then(r => r.json()))
+  );
+
+  results.forEach((data, i) => {
+    const col = document.createElement("div");
+    col.className = "day-col";
+
+    const head = document.createElement("div");
+    head.className = "day-col__head";
+    head.textContent = days[i].toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    col.appendChild(head);
+
+    data.slots.forEach(slot => {
+      const chip = document.createElement("div");
+      chip.className = `slot slot--${slot.status}`;
+      chip.textContent = formatHour(slot.hour);
+      chip.title = slot.status.replace("_", " ");
+      if (slot.status === "available") {
+        chip.addEventListener("click", () => openModal(data.date, slot.hour));
+      }
+      col.appendChild(chip);
+    });
+
+    slotsBox.appendChild(col);
   });
 }
 
@@ -35,9 +58,10 @@ function formatHour(h) {
   return `${hour12}:00 ${suffix}`;
 }
 
-function openModal(hour) {
+function openModal(date, hour) {
+  selectedDate = date;
   selectedHour = hour;
-  modalSlot.textContent = `${dateInput.value} — starting ${formatHour(hour)}`;
+  modalSlot.textContent = `${date} — starting ${formatHour(hour)}`;
   updateSummary();
   modal.classList.remove("hidden");
 }
@@ -45,6 +69,7 @@ function openModal(hour) {
 function closeModal() {
   modal.classList.add("hidden");
   selectedHour = null;
+  selectedDate = null;
 }
 
 function updateSummary() {
@@ -60,7 +85,7 @@ async function confirmBooking() {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      booking_date: dateInput.value,
+      booking_date: selectedDate,
       start_hour: selectedHour,
       duration: parseInt(durationSelect.value),
       payment_method: paymentSelect.value
@@ -86,5 +111,4 @@ async function confirmBooking() {
 durationSelect.addEventListener("change", updateSummary);
 document.getElementById("confirm-booking").addEventListener("click", confirmBooking);
 document.getElementById("cancel-booking").addEventListener("click", closeModal);
-dateInput.addEventListener("change", loadSlots);
 loadSlots();

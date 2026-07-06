@@ -27,8 +27,13 @@ document.querySelectorAll(".admin-tab").forEach(tab => {
     });
 });
 
-async function loadBookings(date) {
-    const url = date ? `/api/admin/bookings?date=${date}` : "/api/admin/bookings";
+async function loadBookings() {
+    const date = document.getElementById("bookings-date").value;
+    const status = document.getElementById("bookings-status").value;
+    const params = [];
+    if (date) params.push(`date=${date}`);
+    if (status) params.push(`status=${status}`);
+    const url = "/api/admin/bookings" + (params.length ? "?" + params.join("&") : "");
     const res = await fetch(url);
     const bookings = await res.json();
     const box = document.getElementById("bookings-list");
@@ -63,7 +68,7 @@ async function loadBookings(date) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ reference })
                 });
-                loadBookings(date);
+                loadBookings();
             });
             actions.appendChild(payBtn);
         }
@@ -75,7 +80,7 @@ async function loadBookings(date) {
             cancelBtn.addEventListener("click", async () => {
                 if (!confirm(`Cancel this booking for ${name}?`)) return;
                 await fetch(`/api/admin/bookings/${b.id}/cancel`, { method: "POST" });
-                loadBookings(date);
+                loadBookings();
             });
             actions.appendChild(cancelBtn);
         }
@@ -85,11 +90,12 @@ async function loadBookings(date) {
     });
 }
 
-document.getElementById("bookings-filter").addEventListener("click", () => {
-    const date = document.getElementById("bookings-date").value;
-    if (date) loadBookings(date);
+document.getElementById("bookings-filter").addEventListener("click", () => loadBookings());
+document.getElementById("bookings-all").addEventListener("click", () => {
+    document.getElementById("bookings-date").value = "";
+    document.getElementById("bookings-status").value = "";
+    loadBookings();
 });
-document.getElementById("bookings-all").addEventListener("click", () => loadBookings());
 
 document.getElementById("walkin-form").addEventListener("submit", async (event) => {
     event.preventDefault();

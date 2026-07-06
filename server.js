@@ -91,6 +91,35 @@ app.get("/api/me", (req, res) => {
 app.get("/api/auth/logout", (req, res) => {
     req.session.destroy(() => res.redirect("/"));
 });
+
+function isPastSlot(date, hour) {
+    const slot = new Date(`${date}T${String(hour).padStart(2, "0")}:00:00`);
+    return slot <= new Date();
+}
+
+async function findConflict(date, start, end, excludeId) {
+    let sql = "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'";
+    const params = [date];
+    if (excludeId) {
+        sql += " AND id != ?";
+        params.push(excludeId);
+    }
+    const [bookings] = await db.query(sql, params);
+    const [openPlay] = await db.query("SELECT start_time, end_time FROM open_play_sessions WHERE session_date = ?", [date]);
+    const [blocked] = await db.query("SELECT start_time, end_time FROM blocked_slots WHERE blocked_date = ?", [date]);
+
+    function hit(list) {
+        for (let h = start; h < end; h++) {
+            if (list.some(x => h >= parseInt(x.start_time.slice(0, 2)) && h < parseInt(x.end_time.slice(0, 2)))) return true;
+        }
+        return false;
+    }
+
+    if (hit(bookings)) return "already reserved";
+    if (hit(openPlay)) return "used for open play";
+    if (hit(blocked)) return "unavailable";
+    return null;
+}
 app.get("/api/availability", async (req, res) => {
     const date = req.query.date;
     if (!date) return res.status(400).json({ error: "Date is required" });
@@ -118,6 +147,7 @@ app.get("/api/availability", async (req, res) => {
         if (covered(blocked, hour)) status = "blocked";
         else if (covered(bookings, hour)) status = "reserved";
         else if (covered(openPlay, hour)) status = "open_play";
+        if (status === "available" && isPastSlot(date, hour)) status = "blocked";
         return { hour, status };
     });
 
@@ -140,14 +170,12 @@ app.post("/api/bookings", async (req, res) => {
     if (!okMorning && !okEvening) {
         return res.status(400).json({ error: "Booking must stay within operating hours." });
     }
-    const [existing] = await db.query(
-        "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'",
-        [booking_date]
-    );
-    for (let h = start; h < end; h++) {
-        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2))
-        );
-        if (taken) return res.status(409).json({ error: "Sorry, that slot is taken." });
+    if (isPastSlot(booking_date, start)) {
+        return res.status(400).json({ error: "That time has already passed." });
+    }
+    const conflict = await findConflict(booking_date, start, end);
+    if (conflict) {
+        return res.status(409).json({ error: `Sorry, that slot is ${conflict}.` });
     }
     const start_time = `${String(start).padStart(2, "0")}:00:00`;
     const end_time = `${String(end).padStart(2, "0")}:00:00`;
@@ -233,11 +261,9 @@ async function chatCreateBooking(user, input) {
     const okEvening = start >= 17 && end <= 22;
     if (!okMorning && !okEvening) return "That booking is outside operating hours (6:00-9:00 AM and 5:00-10:00 PM). Suggest a valid time.";
 
-    const [existing] = await db.query("SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'", [date]);
-    for (let h = start; h < end; h++) {
-        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2)));
-        if (taken) return "One of those hours is already reserved. Tell the customer that time is taken and offer another slot.";
-    }
+    if (isPastSlot(date, start)) return "That time is already in the past. Ask the customer for a future date or time.";
+    const conflict = await findConflict(date, start, end);
+    if (conflict) return `One of those hours is ${conflict}. Tell the customer that time is not open and offer another slot.`;
 
     const start_time = `${String(start).padStart(2, "0")}:00:00`;
     const end_time = `${String(end).padStart(2, "0")}:00:00`;
@@ -278,7 +304,8 @@ const chatTools = [
 const chatSystemPrompt = `You are the friendly booking assistant for a pickleball court reservation website.
 Court reservations cost 150 pesos per hour. Open play is 100 pesos per head. Operating hours are 6:00 to 9:00 in the morning and 5:00 to 10:00 in the evening, every day.
 You can check availability and create bookings using your tools. A booking can only be made for a customer who is logged in.
-Always confirm the date, start time, duration, and payment method with the customer before creating a booking. Keep replies short and friendly. Only answer questions about this pickleball court and its bookings. Today's date is ${new Date().toISOString().slice(0, 10)}.`;
+Always confirm the date, start time, duration, and payment method with the customer before creating a booking. Keep replies short and friendly. Only answer questions about this pickleball court and its bookings.
+If a customer wants to talk to the owner or needs help you cannot give, tell them to message the Pickleball Court Facebook page or call 0917-000-0000. You cannot confirm or process payments; the owner records payments on site or from the e-wallet reference. Today's date is ${new Date().toISOString().slice(0, 10)}.`;
 
 app.post("/api/chat", async (req, res) => {
     const message = req.body.message;
@@ -352,14 +379,11 @@ app.post("/api/bookings/:id/reschedule", async (req, res) => {
     const okEvening = start >= 17 && end <= 22;
     if (!okMorning && !okEvening) return res.status(400).json({ error: "New time is outside operating hours." });
 
-    const [existing] = await db.query(
-        "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled' AND id != ?",
-        [date, req.params.id]
-    );
-    for (let h = start; h < end; h++) {
-        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2)));
-        if (taken) return res.status(409).json({ error: "That new slot is already taken." });
+    if (isPastSlot(date, start)) {
+        return res.status(400).json({ error: "That new time has already passed." });
     }
+    const conflict = await findConflict(date, start, end, req.params.id);
+    if (conflict) return res.status(409).json({ error: `That new slot is ${conflict}.` });
 
     const start_time = `${String(start).padStart(2, "0")}:00:00`;
     const end_time = `${String(end).padStart(2, "0")}:00:00`;
@@ -381,8 +405,12 @@ app.get("/api/admin/bookings", requireAdmin, async (req, res) => {
                       b.ewallet_reference, b.status, b.walk_in_name,
                       u.first_name, u.last_name
                FROM bookings b LEFT JOIN users u ON b.user_id = u.id`;
+    const status = req.query.status;
     const params = [];
-    if (date) { sql += " WHERE b.booking_date = ?"; params.push(date); }
+    const conditions = [];
+    if (date) { conditions.push("b.booking_date = ?"); params.push(date); }
+    if (status) { conditions.push("b.status = ?"); params.push(status); }
+    if (conditions.length) sql += " WHERE " + conditions.join(" AND ");
     sql += " ORDER BY b.booking_date DESC, b.start_time";
     const [rows] = await db.query(sql, params);
     res.json(rows);
@@ -399,12 +427,8 @@ app.post("/api/admin/bookings", requireAdmin, async (req, res) => {
     const okEvening = start >= 17 && end <= 22;
     if (!okMorning && !okEvening) return res.status(400).json({ error: "Outside operating hours" });
 
-    const [existing] = await db.query(
-        "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND status != 'cancelled'", [date]);
-    for (let h = start; h < end; h++) {
-        const taken = existing.some(b => h >= parseInt(b.start_time.slice(0, 2)) && h < parseInt(b.end_time.slice(0, 2)));
-        if (taken) return res.status(409).json({ error: "That slot is already taken" });
-    }
+    const conflict = await findConflict(date, start, end);
+    if (conflict) return res.status(409).json({ error: `That slot is ${conflict}` });
 
     const start_time = `${String(start).padStart(2, "0")}:00:00`;
     const end_time = `${String(end).padStart(2, "0")}:00:00`;
