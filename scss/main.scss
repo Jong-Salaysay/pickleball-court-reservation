@@ -256,3 +256,60 @@ body{
   display: block; width: 100%; margin-top: 8px;
   background: none; border: none; color: $gray; cursor: pointer;
 }
+.bookings-page { max-width: 720px; margin: 0 auto; padding: 32px; }
+.booking-card {
+  display: flex; justify-content: space-between; align-items: center;
+  border: 1px solid #E0E0E0; border-radius: 8px;
+  padding: 16px; margin-bottom: 12px;
+  .muted { color: $gray; font-size: 13px; }
+}
+.btn-cancel-booking {
+  border: 1px solid #C0392B; color: #C0392B; background: white;
+  padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold;
+}
+.chat-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px;
+}
+.chat-box {
+    height: 440px;
+    overflow-y: auto;
+    border: 1px solid #E0E0E0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: white;
+}
+.bubble {
+    max-width: 75%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    &--user {
+        align-self: flex-end;
+        background: $green;
+        color: white;
+    }
+    &--bot {
+        align-self: flex-start;
+        background: $light;
+        color: $dark;
+    }
+}
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    input {
+        flex: 1;
+        padding: 12px;
+        border: 1px solid #E0E0E0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+}

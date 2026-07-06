@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Chat Assistant</title>
+        <link rel="stylesheet" href="/css/main.css"/>
+    </head>
+    <body>
+        <header class="navbar">
+            <div class="navbar__brand"> Pickleball Court</div>
+            <nav class="navbar__links">
+                <a href="/">Home</a>
+                <a href="#rates">Rates</a>
+                <a href="#contact">Contact</a>
+                <a href="/login.html">Login</a>
+                <a href="/register.html" class="btn btn--light">Register</a>
+            </nav>
+        </header>
+        <main class="chat-page">
+            <h1>Chat Assistant</h1>
+            <div id="chat-box" class="chat-box"></div>
+            <form id="chat-form" class="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button type="submit" class="btn btn--primary">Send</button>
+            </form>
+        </main>
+        <script src="/js/nav.js"></script>
+        <script src="/js/chat.js"></script>
+    </body>
+</html>
