@@ -11,7 +11,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.2.1"
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.5"
   },
   "devDependencies": {
     "sass": "^1.101.0"
